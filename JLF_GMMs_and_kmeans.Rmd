@@ -1,0 +1,185 @@
+---
+title: "Implementing Gaussian Mixture Models (GMM) and k-means clustering in R using simulated data"
+author: "Jacob L. Fine"
+date: "April 4th, 2024"
+output: html_document
+---
+
+**Description:**
+
+We are often interested in identifying sub-populations with distinct probability distributions, the parameters of which may be estimated by numerical methods. The purpose of this demonstration is to show that three underlying multivariate Gaussian distributions, when combined into a mixture of Gaussian distributions, can be re-identified by unsupervised learning. We will implement the Expectation-Maximization (EM) algorithm, a key numerical method widely used in statistical inference, to estimate the parameters of each multivariate Gaussian component. We will also implement the k-means clustering algorithm to do the same. We will then show that the estimated means resemble the original sample means of the noise-adjusted component distributions.
+
+**Step 1:** Import libraries
+
+```{r setup, include=FALSE}
+# Sets the seed
+set.seed(2000127)
+# Checks if the mclust package is installed, else, installs it
+if (!requireNamespace("mclust", quietly = TRUE)) {
+  install.packages("mclust")
+}
+# Checks if the MASS package is installed, esle, installs it
+if (!requireNamespace("MASS", quietly = TRUE)) {
+  install.packages("MASS")
+}
+
+# Loads the necessary packages
+library(mclust)
+library(MASS)
+
+# Checks if the packages are installed, else, installs it
+
+if (!requireNamespace("knitr", quietly = TRUE)) {
+  install.packages("knitr")
+}
+if (!requireNamespace("kableExtra", quietly = TRUE)) {
+  install.packages("kableExtra")
+}
+library(knitr)
+library(kableExtra)
+
+```
+
+**Step 2:** Simulate and plot the data from multivariate Gaussian distributions
+
+```{r new-chunk}
+# selects the number of samples to use
+n_samples <- 200
+
+# sets the covariance matrix
+c_matrix <- c(1, 0, 0, 1)
+
+# sets the means vectors
+mean_1 <- c(2,2)
+mean_2 <- c(-2,2)
+mean_3 <- c(-3,-3)
+# simulates data from multivariate normal distributions
+data1 <- mvrnorm(n_samples, mu = mean_1, Sigma = matrix(c_matrix, nrow = 2))
+data2 <- mvrnorm(n_samples, mu = mean_2, Sigma = matrix(c_matrix, nrow = 2))
+data3 <- mvrnorm(n_samples, mu = mean_3, Sigma = matrix(c_matrix, nrow = 2))
+
+
+# adds random noise to each datapoint in the matirx, by adding random numbers between -a and +a
+# the threshold of noise to add to
+a = 1
+data1 <- data1 +  matrix(runif(nrow(data1)*ncol(data1), min = -a, max = a), ncol = 2)
+data2 <- data2 +   matrix(runif(nrow(data1)*ncol(data1), min = -a, max = a), ncol = 2)
+data3 <- data3 +   matrix(runif(nrow(data1)*ncol(data1), min = -a, max = a), ncol = 2)
+
+# Concatenates the rows of each MV distribution to make a combined distribution
+data <- rbind(data1, data2, data3)
+# Plots the datapoints, recalling where each MV Gaussian came from
+plot(data,
+     main = "Mixture of Gaussians with random noise", xlab = "X1", ylab = "X2")
+
+
+# computes the mean of each underlying random variable after noise adjustment
+mean_data1 <- colMeans(data1)
+mean_data2 <- colMeans(data2)
+mean_data3 <- colMeans(data3)
+
+# concatenates them
+all_means <- c(mean_data1, mean_data2, mean_data3)
+
+# reshapes the means into a 2x3 matrix
+means_ground_truth <- t(matrix(all_means, nrow = 3, byrow = TRUE))
+```
+
+**Step 3:** Construct a GMM using the EM algorithm, and plot results
+
+```{r new-chunk}
+gmm_model <- Mclust(data, G = 3)
+
+# For each datapoint, the probability that it belongs to each cluster
+cluster_probs <- predict(gmm_model, classification = "posterior")
+
+# Plots the classification of each datapoint
+plot(gmm_model, what = "classification", xlab = "X1", ylab = "X2")
+title("EM-predicted cluster assignments in GMM")
+
+# returns the EM parameter estimates of the noise-adjusted Gaussian components
+GMM_means <- gmm_model$parameters$mean
+covariances <- gmm_model$parameters$variance$sigma
+mixing_coefficients <- gmm_model$parameters$pro
+
+
+```
+
+**Step 4:** Implement k-means clustering to compare estimates with GMM
+
+```{r new-chunk}
+# perform k-means clustering with three predicted clusters
+kmeans_result <- kmeans(data, centers = 3)
+
+# plot results
+plot(data, col = kmeans_result$cluster, main = "k-means cluster assignments", xlab = "X1", ylab = "X2")
+
+# gett the cluster centers
+cluster_centers <- kmeans_result$centers
+cluster_centers <- t(cluster_centers)
+
+
+# determines the number of negatives in each col to reorganize based on this
+count_negative_values <- function(col) {
+  sum(col < 0)
+}
+negative_counts <- apply(cluster_centers, 2, count_negative_values)
+
+# sorts the columns based on number of negative values per col
+order_indices <- order(negative_counts)  
+cluster_centers_reordered <- cluster_centers[, order_indices]
+colnames(cluster_centers_reordered) <- NULL
+kmeans_means <- cluster_centers_reordered
+
+```
+
+**Step 5:** Compare the EM-estimated means and the k-means estimated means with the parameters we would have obtained by computing sample means in the original component distributions.
+
+```{r new-chunk}
+
+# sets the column titles
+column_titles <- c("sub-pop. 1", "sub-pop. 2", "sub-pop. 3")
+colnames(means_ground_truth) <- column_titles
+
+# the caption for the table
+caption_html <- "<b>Sample means (ground truth)</b>"
+
+# Plots the original means
+kable(means_ground_truth, caption = caption_html) %>%
+  kable_styling(full_width = FALSE) %>%
+  scroll_box(width = "100%")
+
+# computes the mean squared difference between the estimated parameters (GMM) and the sample means of original Gaussians
+MSE = mean((GMM_means-means_ground_truth)^2)
+MSE <- format(MSE, scientific = TRUE, digits = 2)
+
+# Adds the MSE value to the title
+title_with_mse <- paste("<b>Means (GMM)<\b>, MSE =", MSE)
+
+column_titles <- c("sub-pop. 1", "sub-pop. 2", "sub-pop. 3")
+colnames(GMM_means) <- column_titles
+
+# Plots the estimated means
+kable(GMM_means, caption = title_with_mse) %>%
+  kable_styling(full_width = FALSE) %>%
+  scroll_box(width = "100%")
+
+
+# computes the mean squared difference between the estimated parameters (k-means) and the sample means of original Gaussians
+MSE = mean((kmeans_means-means_ground_truth)^2)
+MSE <- format(MSE, scientific = TRUE, digits = 2)
+
+column_titles <- c("sub-pop. 1", "sub-pop. 2", "sub-pop. 3")
+colnames(kmeans_means) <- column_titles
+
+# Adds the MSE value to the title
+title_with_mse <- paste("<b>Means (k-means)<\b>, MSE =", MSE)
+
+# Plots the estimated means
+kable(kmeans_means, caption = title_with_mse) %>%
+  kable_styling(full_width = FALSE) %>%
+  scroll_box(width = "100%")
+
+```
+
+As can be seen, we have estimated the means of the sub-populations in the mixture of three different Gaussian distributions using (i) a Gaussian mixture model with the EM algorithm and (ii) k-means clustering. We have obtained similar results with low MSE using the sample means of the original distributions as ground truth.
