@@ -182,4 +182,3 @@ kable(kmeans_means, caption = title_with_mse) %>%
 
 ```
 
-As can be seen, we have estimated the means of the sub-populations in the mixture of three different Gaussian distributions using (i) a Gaussian mixture model with the EM algorithm and (ii) k-means clustering. We have obtained similar results with low MSE using the sample means of the original distributions as ground truth.
