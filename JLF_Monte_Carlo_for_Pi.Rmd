@@ -1,0 +1,93 @@
+---
+title: "Estimating π with a Monte Carlo approach"
+author: "Jacob L. Fine"
+date: "April 20th, 2024"
+output: html_document
+---
+
+# Introduction
+
+Here, we will implement the classic Monte Carlo method used for estimating the value of $\pi$. First, we will generate random points in the first quadrant of a two-dimensional Cartesian coordinate system such that they are in the positive region defined by the equation of a unit circle $x^2 + y^2 = 1$. 
+
+To show that our Monte Carlo estimator is unbiased, we note that the probability of a randomly generated point $(x,y)$ falling within the portion of the unit circle in the first quadrant is exactly $p = \pi/4$, which is the expected value of the proportion of points in that region. We therefore have:
+
+$$ E(\hat{p}) =\pi/4 $$
+which makes our estimator unbiased since:
+
+$$ E(\hat{p}) - p = \pi/4 - \pi/4 = 0 $$
+By the Weak Law of Large Numbers (WLLN), the estimator $\hat{p}$ of the true proportion $p$ will converge in probability to the true proportion, such that:
+
+$$ \hat{p} \rightarrow^p p = \pi/4 $$
+
+which makes our estimator consistent.
+
+# R code and results
+
+```{r, calculation_results, echo=TRUE}
+# sets the random seed
+set.seed(2000127)
+
+# defines the function to estimate pi
+pi_estimate <- function(n_points) {
+  # the original number of points inside the circle region
+  points_inside_circle <- 0
+  
+  # Create vectors to store x and y coordinates of points inside and outside the circle
+  x_internal <- numeric()
+  y_internal <- numeric()
+  x_external <- numeric()
+  y_external <- numeric()
+  
+  # generates all of the points, both inside and outside the circle
+  for (i in 1:n_points) {
+    # generates a pair of values x and y from a standard uniform distribution
+    x <- runif(1, 0, 1)
+    y <- runif(1, 0, 1)
+    
+    # computes the squared distance from the origin, i.e., the squared radius
+    radius_squared <- x^2 + y^2
+    
+    # if the distance is within the region bounded by the circle, count that as a point inside the circle
+    if (radius_squared <= 1) {
+      points_inside_circle <- points_inside_circle + 1
+      x_internal <- c(x_internal, x)
+      y_internal <- c(y_internal, y)
+    } else {
+      x_external <- c(x_external, x)
+      y_external <- c(y_external, y)
+    }
+  }
+  
+  # Creates a plot of points inside vs outside the circle; interior points are blue and exterior are dark green
+  plot(x_internal, y_internal, pch = 19, col = "blue", xlim = c(0, 1), ylim = c(0, 1), asp = 1, main = "Monte Carlo simulated points to approximate \n π = 4 x count(blue dots) / count(all dots)")
+  
+  # Makes points outside the circle black
+  points(x_external, y_external, pch = 19, col = "darkgreen")
+  
+  # Plots the unit circle
+  theta <- seq(0, 2 * pi, length.out = 100)
+  circle_x <- cos(theta)
+  circle_y <- sin(theta)
+  lines(circle_x, circle_y, col = "red")
+  # The estimate of pi; we are estimating pi/4 (points_inside_circle / n_points), so multiply by 4 to obtain pi
+
+  pi_estimate <- 4 * points_inside_circle / n_points
+
+  return(pi_estimate)
+}
+
+# set the number of iterations (points) to generate
+n_points <- 1000
+
+# calls the function to estimate pi
+pi_estimate <- pi_estimate(n_points)
+cat("Estimated value of Pi using", n_points, "points:", pi_estimate, "\n")
+
+# stores the true value of pi
+true_pi <- pi
+
+# finds the difference between the estimated value of pi and the true value
+difference <- abs(pi_estimate - true_pi)
+cat("Number of simulations:", n_points, "\n")
+cat("Estimated value of pi:", pi_estimate, "\n")
+cat("Difference between estimated pi and true pi:", difference, "\n")
