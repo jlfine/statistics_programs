@@ -5,7 +5,7 @@ date: "April 20th, 2024"
 output: html_document
 ---
 
-# Introduction
+## Introduction
 
 Here, we will implement the classic Monte Carlo method used for estimating the value of $\pi$. First, we will generate random points in the first quadrant of a two-dimensional Cartesian coordinate system such that they are in the positive region defined by the equation of a unit circle $x^2 + y^2 = 1$. 
 
@@ -21,7 +21,7 @@ $$ \hat{p} \rightarrow^p p = \pi/4 $$
 
 which makes our estimator consistent.
 
-# R code and results
+## R code and results
 
 ```{r, calculation_results, echo=TRUE}
 # sets the random seed
