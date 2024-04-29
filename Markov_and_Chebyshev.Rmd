@@ -1,0 +1,55 @@
+---
+title: |
+  | Proof of Markov and Chebyshev's inequalities
+  |
+  | Jacob L. Fine
+  
+output: pdf_document
+date: "April 29th, 2024"
+geometry: margin = 1in
+fontsize: 12pt
+---
+
+In statistical inference, we often wish to compute an upper bound on the probability that a
+random variable, which may be a parameter of interest, deviates from some value. For instance, we
+may wish to know the probability that our parameter $\theta$ is larger than some positive value $k$.
+
+Two inequalities are used to compute these values: Markov's inequality and Chebyshev's inequality. We will derive Markov's 
+inequality and show how we can use it to obtain Chebyshev's inequality. 
+
+Markov's inequality states that for some positive value $k$ when $\theta$ is non-negative, if the expected value $E(\theta)$ is defined, then
+
+$$P(\theta > k) \leq E(\theta)/k$$
+
+To show why this is true we may write the $E(\theta)$ as, since $\theta$ is non-negative, so
+
+$$E(\theta) = \int_0^{\infty}\theta f(\theta)d\theta$$
+We can rewrite the integral on the LHS to specify some positive value $k$ we are interested in as
+
+$$E(\theta) = \int_0^{k}\theta f(\theta)d\theta + \int_k^{\infty}\theta f(\theta)d\theta$$
+Since every term in the above is non-negative, the sum of the integrals must be larger than either individual integral, so 
+
+$$E(\theta) = \int_0^{k}\theta f(\theta)d\theta + \int_k^{\infty}\theta f(\theta)d\theta \geq \int_k^{\infty}\theta f(\theta)d\theta $$
+And since $k$ is positive and $\theta$ is non-negative, integrating the product $\theta f(\theta)$ will yield a value that is at least as large, or larger, than the integral $\int_k^{\infty} kf(\theta)d\theta$. Therefore we have
+
+$$E(\theta) \geq \int_k^{\infty}\theta f(\theta)d\theta \geq k\int_k^{\infty} f(\theta)d\theta $$
+And since $\int_k^{\infty} f(\theta)d\theta$ is just the probability that $\theta$ is larger than $k$, we can write
+
+$$E(\theta)  \geq kP(\theta > k)$$
+$$\implies P(\theta > k) \leq E(\theta)/k$$
+which is the expression of Markov's inequality. We may now use this to derive Chebyshe'v inequality, which is
+
+$$P(|\theta - E(\theta)| > k) \leq Var(\theta)/k^2$$
+To show this, we may treat $|\theta - E(\theta)|$ as a non-negative random variable and substitute it into Markov's inequality
+
+$$\implies P(|\theta - E(\theta)| > k) \leq E(|\theta - E(\theta)|)/k$$
+We may square both sides on the inequality inside the probability, as well as the term of the RHS $|\theta - E(\theta)|/k$, to obtain
+
+$$\implies P([\theta - E(\theta)]^2 > k^2) \leq E[\theta - E(\theta)]^2/k^2$$
+And since the definition of variance is 
+
+$$E([\theta - E(\theta)]^2)=Var(\theta)$$
+We may write
+
+$$\implies P(|\theta - E(\theta)| > k) \leq Var(\theta)/k^2$$
+which is the desired result.
