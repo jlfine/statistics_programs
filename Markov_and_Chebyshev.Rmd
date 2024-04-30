@@ -11,10 +11,9 @@ fontsize: 12pt
 ---
 
 In statistical inference, we often wish to compute an upper bound on the probability that a
-random variable, which may be a parameter of interest, deviates from some value. For instance, we
-may wish to know the probability that our parameter $\theta$ is larger than some positive value $k$.
+random variable, which may be a parameter of interest, deviates from some positive value $k$.
 
-Two inequalities are used to compute these values: Markov's inequality and Chebyshev's inequality. We will derive Markov's 
+Two inequalities are often used for these questions: Markov's inequality and Chebyshev's inequality. We will derive Markov's 
 inequality and show how we can use it to obtain Chebyshev's inequality. 
 
 Markov's inequality states that for some positive value $k$ when $\theta$ is non-negative, if the expected value $E(\theta)$ is defined, then
