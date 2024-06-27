@@ -1,4 +1,4 @@
-# Statistics
+## Statistics programs
 
 A repository of programs and notebooks of critical statistical concepts to serve as a source of reference in the development and application of statistical methods to scientific questions, relevant to my current research in computational biology.
 
