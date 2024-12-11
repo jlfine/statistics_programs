@@ -8,5 +8,6 @@ A repository of programs and notebooks of critical statistical concepts to serve
 - Expectation-Maximization (EM) algorithm implementation to resolve mixtures of distributions
 - Gradient descent to find the minimum of a multivariate function
 - Proof of Markov's and Chebyshev's inequalities
+- Probability integral transform demonstration
 - Gaussian mixture models (GMMs) and k-means clusering to resolve mixtures of simulated distributions
 - Monte carlo method for estimating $\pi$
