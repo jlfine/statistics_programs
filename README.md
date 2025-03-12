@@ -12,4 +12,5 @@ A repository of programs and notebooks of critical statistical concepts to serve
 - Gaussian mixture models (GMMs) and k-means clusering to resolve mixtures of simulated distributions
 - Monte carlo method for estimating $\pi$
 - Probability integral transform demonstration
-- Implementing Naive Bayes from scratch
+- Implementing Naive Bayes classifier from scratch  
+- Implementing a Decision Tree classifier from scratch
